@@ -57,9 +57,9 @@ compatibility promises we want to make with our APIs.
      restricted to grammar, spelling, or procedural errors related to the
      preparation of the proposal itself. All other comments should be
      addressed to the related GitHub issue.
- 6. Once comments and revisions on the design doc wind down, there is a final
-    discussion about the proposal.
-    * The goal of the discussion is to reach agreement on (1) accept or (2) decline.
-    * The discussion should be resolved in a timely manner.
-    * If clear agreement cannot be reached, the arbiter reviews the discussion and makes a decision.
+6. Once comments and revisions on the design doc wind down, there is a final
+   discussion about the proposal.
+   * The goal of the discussion is to reach agreement on (1) accept or (2) decline.
+   * The discussion should be resolved in a timely manner.
+   * If clear agreement cannot be reached, the arbiter reviews the discussion and makes a decision.
 7. The author (and/or other contributors) do the work.
