@@ -1,4 +1,4 @@
-[This is a template for Pilosa's change proposal process, documented [here](../README.md).]
+[This is a template for Pilosa's change proposal process, documented [here](../proposal.md).]
 
 # Proposal: [Title]
 
