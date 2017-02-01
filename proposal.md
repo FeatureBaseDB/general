@@ -30,6 +30,8 @@ Deciding what is appropriate is a matter of judgement we will
 refine through experience. If in doubt, file a proposal.
 
 ## Compatibility
+Consider what effect this change will have on existing users - 
+what can be done to mitigate impact?
 By the time Pilosa hits 1.0, we'll have to decide what sort of backwards
 compatibility promises we want to make with our APIs.
     
@@ -45,10 +47,10 @@ compatibility promises we want to make with our APIs.
 3. It's always fine to label a suggestion issue with the Proposal to opt in to this process.
 4. It's always fine not to label an issue. (it can be added later if necessary)
 5. If a proposal leads to a design doc:
-   * The design doc should be checked in to the proposal repository as
+   * The design doc should be checked in to the general repository as
      `design/NNNN-shortname.md`, where `NNNN` is the GitHub issue number and
      shortname is a short name (a few dash-separated words at most).
-   * The design doc should follow the template(TODO).
+   * The design doc should follow the [template](design/template.md).
    * It is expected that the design doc may go through multiple checked-in revisions.
    * New design doc authors may be paired with a design doc "shepherd" to help work on the doc.
    * For design documents should be wrapped around the 80 column mark. Each
