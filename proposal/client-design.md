@@ -1,15 +1,12 @@
 # Pilosa Client Library Design
 
 
-**Author**
-- Yuce Tekol yuce@pilosa.com
-
 
 ## Conventions
 
 The following conventions were used in this document:
 
-- `name(argument1: type1, argument2: type2)`: Function or method that has two arguments and has no meaningful return value. `argument1` or `argument2` are both required.
+- `name(argument1: type1, argument2: type2)`: Function or method that has two arguments and has no meaningful return value. `argument1` and `argument2` are both required.
 - `name(argument1: type1, argument2?: type2)`: Function or method that has two arguments and has no meaningful return value. `argument1` is required, `argument2` is optional.
 - `name() -> return_type`: Function or method that has no arguments with the given return type.
 - `constructor name() -> return_type`: Function or method that creates an object of type `return_type`.
@@ -72,7 +69,7 @@ The `Cluster` class keeps the addresses of the hosts in the cluster.
 - `attribute get hosts: List(URI)`: Returns all hosts in the cluster.
 - `addHost(uri: URI)`: Adds a host with the given URI to the cluster.
 - `getHost() -> URI`: Returns the next host in the cluster. It's up to the cluster object to choose which host to return; currently the hosts are selected in a round robin fashion. If there are no hosts in the cluster, an exception is thrown.
-- `removeHost(uri: URI)`: This method is used to remove bad hosts (down or consistenly returning connection errors) from the cluster object. Depending on the cluster object, the host maybe removed for good, or it maybe banned (unselectable by `getHost`) for a certain time.
+- `removeHost(uri: URI)`: This method is used to remove bad hosts (down or consistenly returning connection errors) from the cluster object. Depending on the cluster object, the host may be removed for good, or it may be banned (unselectable by `getHost`) for a certain time.
 
 #### Client
 
@@ -115,9 +112,9 @@ In order to customize how the `Client` works, users can pass a `ClientOptions` o
 
 This class collects validation methods for various user input. In Go library, all of the following are individual functions:
 
-- `validIndexName(name: string) -> bool`: Returns `true` if the given index name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z0-9_-]+$`.
-- `validFrameName(name: string) -> bool`: Returns `true` if the given frame name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z0-9][.a-z0-9_-]*$`.
-- `validLabel(label: string) -> bool`: Returns `true` if the given label is valid, otherwise `false`. Valid labels are between 1 and 64 in length and matches against the following regexp: `^[a-zA-Z][a-zA-Z0-9_]*$`.
+- `validIndexName(name: string) -> bool`: Returns `true` if the given index name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z][a-z0-9_-]*$`.
+- `validFrameName(name: string) -> bool`: Returns `true` if the given frame name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z][a-z0-9_-]*$`.
+- `validLabel(label: string) -> bool`: Returns `true` if the given label is valid, otherwise `false`. Valid labels are between 1 and 64 in length and matches against the following regexp: `^[a-zA-Z][a-zA-Z0-9_-]*$`.
 
 ### Response
 
@@ -139,7 +136,7 @@ foreach (result in response.results) {
 }
 ```
 
-`result` and `column` attributes maybe `null`, which makes it more concise to check the existence of results and cokumns for languages which consider `null` as a false value:
+`result` and `column` attributes may be `null`, which makes it more concise to check the existence of results and columns for languages which consider `null` as a false value:
 ```
 if (response.column) {
     // do something with response.column
