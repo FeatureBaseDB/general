@@ -195,9 +195,9 @@ Implements `PQLQuery`.
 - `attribute get options: IndexOptions`
 - `frame(name: string, options?: FrameOptions) -> Frame`: Return a Frame with the given name and options. Note that Go client returns an additional `error`.
 - `batchQuery() -> PQLBatchQuery`
-- `union(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 2
-- `intersect(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 2
-- `difference(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 2
+- `union(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 0
+- `intersect(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 1
+- `difference(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 1
 - `count(query: PQLBitmapQuery) -> PQLBaseQuery`
 - `setColumnAttributes(id: int64, attributes: Map<string, any>) -> PQLBaseQuery`
 - *optional* `rawQuery(query: string) -> PQLBaseQuery`: Creates a query with the given string
