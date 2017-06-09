@@ -14,6 +14,7 @@ The following conventions were used in this document:
 - `attribute get name: type`: An attribute which can only be read.
 - `any`: Any type. For instance, it is `interface{}` in the Go client, and `Object` in the Java client.
 - `int64`: Pilosa key type. It should ideally be 64bit integer, but if the language has no support for that, the client should use the biggest numeric type. For instance, Javascript supports a single 64bit floating point type, which can represent integers up to 53bits.
+- `TimeStamp`: a type which contains both date and time.
 - `Map<string, any>`: Map (or *dictionary*) with a string key and any type as the value type.
 - `List<int64>`: List of 64bit unsigned integers.
 - `serialize_type`: The type to serialize a PQL query into.
@@ -207,10 +208,15 @@ Implements `PQLQuery`.
 - `attribute name: string`
 - `attribute options: string`
 - `bitmap(rowID: int64) -> PQLBitmapQuery`
+- `inverseBitmap(columnID: int64) -> PQLBitmapQuery`
 - `setBit(rowID: int64, columnID: int64) -> PQLBaseQuery`
 - `clearBit(rowID: int64, columnID: int64) -> PQLBaseQuery`
 - `topN(n: int64, bitmap?: PQLBitmapQuery) -> PQLBitmapQuery`
+- `inverseTopN(n: int64, bitmap?: PQLBitmapQuery) -> PQLBitmapQuery`
 - `filterTopN(n: int64, bitmap: PQLBitmapQuery, field: string, values: List<any>) -> PQLBitmapQuery`
+- `inverseFilterTopN(n: int64, bitmap: PQLBitmapQuery, field: string, values: List<any>) -> PQLBitmapQuery`
+- `range(rowID: int64, start: TimeStamp, end: TimeStamp) -> PQLBitmapQuery`
+- `inverseRange(columnID: int64, start: TimeStamp, end: TimeStamp) -> PQLBitmapQuery`
 - `setRowAttributes(rowID: int64, attributes: Map<string, any>) -> PQLBaseQuery`
 
 #### IndexOptions (optional)
