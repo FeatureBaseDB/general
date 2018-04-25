@@ -1,6 +1,8 @@
-# Pilosa Client Library Design
+# Pilosa Client Library Design v1
 
+## Introduction
 
+This document contains the interface specification for client libraries for Pilosa v1.0 stable release. The interface described in this document only contains the common features which are expected from all client libraries and does not cover the full feature set of the Pilosa server.
 
 ## Conventions
 
@@ -32,7 +34,7 @@ The scheme ensures that:
 - Client `A.B.x` implements the same features and interface as client version `A.B.y`.
 - It's safe for the users to upgrade from `A.B.1` to `A.B.2` without modifying their code.
 
-This section will be modified when versioning of Pilosa server is complete.
+This section will be modified when versioning specification of Pilosa server is complete.
 
 ## API
 
@@ -86,10 +88,8 @@ Note that, functions of this class uses `Index` and `Frame` objects to receive i
 - `constructor withURI(uri: URI) -> Client`: Creates a client with the given URI and default options.
 - `constructor withCluster(cluster: Cluster, options?: ClientOptions) -> Client`: Creates a client with the given cluster and options.
 - `query(query: PQLQuery, options?: QueryOptions) -> QueryResponse`: Runs a query with the given PQL query object and given query options. Pass `null` for default options.
-- `createIndex(index: Index)`: Creates the given index.
-- `createFrame(frame: Frame)`: Creates the given frame.
-- `ensureIndex(index: Index)`: Creates an index if it doesn't already exist.
-- `ensureFrame(frame: Frame)`: Creates a frame if it doesn't exist. It's user's responsibility to create the corresponding index.
+- `schema() -> Schema`: Returns the schema (indexes, frames and fields) on the server.
+- `syncSchema(schema: Schema)`: Ensures the indexes, frames and fields in the schema exists on the server side; loads indexes, frames and fields from the server. This method does not delete any index, frame or fields on the server side.
 - `deleteIndex(index: Index)`: Deletes an index.
 - `deleteFrame(frame: Frame)`: Deletes a frame.
 
@@ -103,15 +103,18 @@ In order to customize how the `Client` works, users can pass a `ClientOptions` o
 - *optional* `attribute connectionPoolSizePerRoute: int`: Number of connections in the pool for a host.
 - *optional* `attribute connectionPoolTotalSize: int`: Number of total connections in the pool.
 
-#### QueryOptions (optional)
+#### QueryOptions
 
-- `constructor defaultOptions`
+It is possible to affect the response from the Pilosa server using query options.
+
 - `attribute columns: bool`: Set to `true` to retrieve columns in the response for a query.
-- `attribute timeQuantum: TimeQuantum`: Sets the time granularity for the query.
+- `attribute slices: List<int64>`: List of slices to run the given query. It defaults to all slices if not specified.
+- `attribute excludeAttrs: bool`: If true, attributes are excluded from the response.
+- `attribute excludeBits: bool`: If true, bits are excluded from the response.
 
 #### Validator
 
-This class collects validation methods for various user input. In Go library, all of the following are individual functions:
+This class collects validation methods for various user input. In the Go client library, all of the following are individual functions:
 
 - `validIndexName(name: string) -> bool`: Returns `true` if the given index name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z][a-z0-9_-]*$`.
 - `validFrameName(name: string) -> bool`: Returns `true` if the given frame name is valid, otherwise `false`. Valid names are between 1 and 64 in length and matches against the following regexp: `^[a-z][a-z0-9_-]*$`.
@@ -146,9 +149,11 @@ if (response.column) {
 
 #### QueryResult
 
-- `attribute get bitmap: BitmapResult`: Returned from bitmap queries.
+- `attribute get changed: bool`: Returned from `SetBit` and `ClearBit` queries.
+- `attribute get bitmap: BitmapResult`: Returned from bitmap queries, such as `Bitmap`, `Union`, etc.
 - `attribute get countItems: List<CountResultItem>`: Returned from `TopN` queries.
-- `attribute get count: int64`: Returned from `Count` queries.
+- `attribute get count: int64`: Returned from `Count`, `Sum`, `Min` and `Max` queries.
+- `attribute get value: int64`: Returnd from `Sum`, `Min` and `Max` queries.
 
 #### ColumnItem
 
@@ -189,50 +194,58 @@ Implements `PQLQuery`.
 
 - `add(query: PQLQuery)`
 
+#### Schema
+
+- `index(name: string) -> Index`: Returns the index with the given name.
+- `attribute get indexes: List<Index>`: Returns the list of all indexes.
+
 #### Index
 
-- `constructor withName(name: string, options?: IndexOptions) -> Index`
 - `attribute get name: string`
-- `attribute get options: IndexOptions`
-- `frame(name: string, options?: FrameOptions) -> Frame`: Return a Frame with the given name and options. Note that Go client returns an additional `error`.
+- `attribute get frames: List<Frame>`: Returns the list of all frames of this index.
+- `frame(name: string, options?: FrameOptions) -> Frame`: Returns the Frame with the given name and options. The `options` argument is not used if the Frame already exists.
 - `batchQuery() -> PQLBatchQuery`
 - `union(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 0
 - `intersect(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 1
 - `difference(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 1
+- `xor(queries: List<PQLBitmapQuery>) -> PQLBitmapQuery`: len(queries) >= 1
 - `count(query: PQLBitmapQuery) -> PQLBaseQuery`
 - `setColumnAttributes(id: int64, attributes: Map<string, any>) -> PQLBaseQuery`
-- *optional* `rawQuery(query: string) -> PQLBaseQuery`: Creates a query with the given string
+- `rawQuery(query: string) -> PQLBaseQuery`: Creates a query with the given string.
 
 #### Frame
 
 - `attribute name: string`
 - `attribute options: string`
 - `bitmap(rowID: int64) -> PQLBitmapQuery`
-- `inverseBitmap(columnID: int64) -> PQLBitmapQuery`
 - `setBit(rowID: int64, columnID: int64) -> PQLBaseQuery`
 - `clearBit(rowID: int64, columnID: int64) -> PQLBaseQuery`
 - `topN(n: int64, bitmap?: PQLBitmapQuery) -> PQLBitmapQuery`
-- `inverseTopN(n: int64, bitmap?: PQLBitmapQuery) -> PQLBitmapQuery`
 - `filterTopN(n: int64, bitmap: PQLBitmapQuery, field: string, values: List<any>) -> PQLBitmapQuery`
-- `inverseFilterTopN(n: int64, bitmap: PQLBitmapQuery, field: string, values: List<any>) -> PQLBitmapQuery`
 - `range(rowID: int64, start: TimeStamp, end: TimeStamp) -> PQLBitmapQuery`
-- `inverseRange(columnID: int64, start: TimeStamp, end: TimeStamp) -> PQLBitmapQuery`
 - `setRowAttributes(rowID: int64, attributes: Map<string, any>) -> PQLBaseQuery`
-
-#### IndexOptions (optional)
-
-- `constructor defaultOptions() -> IndexOptions`
-- `attribute columnLabel: string`
-- `attribute timeQuantum: TimeQuantum`
 
 #### FrameOptions (optional)
 
 - `constructor defaultOptions() -> FrameOptions`
-- `attribute rowLabel: string`
 - `attribute timeQuantum: TimeQuantum`
-- `attribute inverseEnabled: boolean`
 - `attribute cacheType: CacheType`
 - `attribute cacheSize: unsigned int`
+- `attribute fields: List<RangeField>`
+
+#### RangeField
+- `LessThan(n: int64) -> PQLBitmapQuery`
+- `LessThanOrEqual(n: int64) -> PQLBitmapQuery`
+- `GreaterThan(n: int64) -> PQLBitmapQuery`
+- `GreaterThanOrEqual(n: int64) -> PQLBitmapQuery`
+- `Equals(n: int64) -> PQLBitmapQuery`
+- `NotEquals(n: int64) -> PQLBitmapQuery`
+- `NotNull() -> PQLBitmapQuery`
+- `Between(a: int64, b: int64) -> PQLBitmapQuery`
+- `Sum(bitmap: PQLBitmapQuery) -> PQLQuery`
+- `Min(bitmap: PQLBitmapQuery) -> PQLQuery`
+- `Max(bitmap: PQLBitmapQuery) -> PQLQuery`
+- `SetIntValue(value: int64) -> PQLQuery`
 
 #### TimeQuantum
 
@@ -253,7 +266,6 @@ Implements `PQLQuery`.
 - `enum DEFAULT`: Equivalent to `""`.
 - `enum LRU`: Equivalent to `"lru"`.
 - `enum RANKED`: Equivalent to `"ranked"`.
-
 
 ## Samples
 
@@ -509,12 +521,7 @@ PilosaClient client2 = PilosaClient.withCluster(cluster, options);
 
 ```go
 client1 := pilosa.NewClientWithCluster(cluster, nil)
-
-options := &pilosa.ClientOptions{
-    SocketTimeout: 1000,
-    ConnectTimeout: 2000,
-}
-client2 := pilosa.NewClientWithCluster(cluster, options)
+client2 := pilosa.NewClientWithCluster(cluster, pilosa.SocketTimeout(1000, pilosa.ConnectTimeout(2000)))
 ```
 
 #### Python
@@ -550,11 +557,7 @@ QueryResponse response1 = client.query(frame.bitmap(1), options);
 
 ```go
 response1, err := client.Query(frame.Bitmap(1), nil)
-
-options := &pilosa.QueryOptions{
-    Columns: true,
-}
-response2, err := client.Query(frame.Bitmap(1), options)
+response2, err := client.Query(frame.Bitmap(1), pilosa.Columns(true))
 ```
 
 #### Python
@@ -569,13 +572,13 @@ response2 = client.query(frame.bitmap(1), columns=True)
 
 ```typescript
 client.query(frame.bitmap(1)).then(response1 => {
-    // deal with the response
+    // act on the response
 }).catch(err => {
     // deal with the error
 });
 
 client.query(frame.bitmap(1), {columns: true}).then(response2 => {
-    // deal with the response
+    // act on the response
 }).catch(err => {
     // deal with the error
 });
